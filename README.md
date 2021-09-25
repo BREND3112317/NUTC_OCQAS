@@ -1,9 +1,7 @@
-# BxD Tools - Chrome Extension
+# NUTC.ais Online Course Quick-Auto-Selecting Tools
 ## Install
-1. 下載並安裝基礎套件
+1. 下載
 ```
 git clone https://github.com/BxDlab/Chrome-Extension
-cd Chrome-Extension
-npm install
 ```
 2. 安裝至 Chrome Extension
