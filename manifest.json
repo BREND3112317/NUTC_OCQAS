@@ -27,7 +27,7 @@
         {
             "matches" : ["https://ais.nutc.edu.tw/student/selection/class_add_drop.aspx"],  
             "run_at": "document_idle",
-            "js": ["./static/js/jquery.js", "elective.js"]
+            "js": ["./static/js/jquery.js", "./content/elective.js"]
         }
     ]
 }
