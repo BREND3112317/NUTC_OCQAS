@@ -1,10 +1,9 @@
-var DEBUG = true, showMessage = false;
+var DEBUG = true;
 var thread_list = {};
 var token = document.querySelector("#ctl00_Head1 > script:nth-child(17)").innerText.split("token:'")[1].split("', type")[0];
-
+var type = document.querySelector("#ctl00_Head1 > script:nth-child(17)").innerText.split("token:'")[1].split("', type")[1].split(": '")[1].split("'")[0];
 // (() => {
 //     window.log = function(s) {
-      
 //     };
 //   })(window.log);
 
@@ -34,9 +33,11 @@ tableUpdate = () => {
     });
 }
 
+// 課程加選-自動選課 button
 createElective = (e) => {
-    ccid = e.currentTarget.getAttribute("data-ccid");
-    name = e.currentTarget.getAttribute("data-name")
+    let e_index = parseInt(e.currentTarget.parentNode.parentNode.querySelector("td").innerText)+1;
+    let e_ccid = e.currentTarget.getAttribute("data-ccid");
+    let e_name = e.currentTarget.getAttribute("data-name");
     chrome.storage.sync.get("electives", ({ electives }) => {
         let isExist = (elective) => {
             return elective.ccid == ccid;
@@ -46,42 +47,26 @@ createElective = (e) => {
                 {
                     type: "createElective",
                     data: {
-                        ccid,
-                        name
+                        ccid: e_ccid,
+                        name: e_name
                     }
                 }, function(response) {
-                    electives.push({name, ccid});
+                    electives.push({
+                        index: e_index,
+                        ccid: e_ccid,
+                        name: e_name,
+                        status: {
+                            run: false,
+                            lastMessage: "", 
+                            errorTimes: 0
+                        }
+                    });
                     chrome.storage.sync.set({electives})
                 }
             )
         }
         // console.log(electives.some(isExist), electives)
     });
-}
-
-sendElective = (e) => {
-    console.log("[AE] click", e.target);
-    let ccid = e.target.getAttribute("data-ccid");
-    let name = e.target.getAttribute("data-name");
-    let log = "";
-    chrome.runtime.sendMessage(
-        {
-            type: "updateElectives",
-        }, 
-        function (response) {
-            chrome.storage.sync.get("electives", ({ electives }) => {
-                let isExist = (elective) => {
-                    return elective.ccid == ccid;
-                }
-                if(electives.some(isExist) == false) {
-                    electives.push({name, ccid,log});
-                    chrome.storage.sync.set({electives})
-                }
-                // console.log(electives.some(isExist), electives)
-            });
-        }
-    );
-    
 }
 
 deleteElective = ({ccid}) => {
@@ -108,14 +93,46 @@ clearThread = ({ccid, message}) => {
                 }
             }
         );
-        
+        chrome.storage.sync.get("electives", ({ electives }) => {
+            electives.forEach((elective, key) => {
+                if(elective.ccid == ccid){
+                    elective.status.run = false;
+                    elective.status.lastMessage = message;
+                }
+            })
+            chrome.storage.sync.set({electives})
+        })
+    }
+}
+
+updateThread = ({ccid, message}) => {
+    if(typeof thread_list[ccid] !== "undefined") {
+        clearInterval(thread_list[ccid]);
+        chrome.runtime.sendMessage(
+            {
+                type: "ElectiveFailed",
+                data: {
+                    ccid,
+                    message
+                }
+            }
+        );
+        chrome.storage.sync.get("electives", ({ electives }) => {
+            electives.forEach((elective, key) => {
+                if(elective.ccid == ccid){
+                    elective.status.run = false;
+                    elective.status.lastMessage = message;
+                }
+            })
+            chrome.storage.sync.set({electives})
+        })
     }
 }
 
 startThread = ({ccid}) => {
     thread_list[ccid] = setInterval(() => {
         _ajax(
-            {ccid: ccid, op: "add", token: token, type: "curr_sel"},
+            {ccid: ccid, op: "add", token: token, type: type},
             {
                 success: (res) => {
                     if(DEBUG)console.log(`選課 post 送出 ccid: ${ccid}`)
@@ -128,6 +145,15 @@ startThread = ({ccid}) => {
                                 clearThread({ccid, message})
                             }else{
                                 if(DEBUG)console.log("[resd] failed", resData)
+                                chrome.storage.sync.get("electives", ({ electives }) => {
+                                    electives.forEach((elective, key) => {
+                                        if(elective.ccid == ccid){
+                                            elective.status.run = true;
+                                            elective.status.errorTimes++;
+                                        }
+                                    })
+                                    chrome.storage.sync.set({electives})
+                                })
                             }
                         }else if(resd.type == "function") {
                             let message = resd.args[0];
@@ -170,68 +196,6 @@ startThread = ({ccid}) => {
     if(DEBUG)console.log("startThread", thread_list);
 }
 
-pre_StartElective = () => {
-    chrome.storage.sync.get("electives", ({ electives }) => {
-        StartElective(electives);
-    })
-}
-
-StartElective = (elective_list) => {
-    elective_list.map((elective) => {
-        console.log("StartElective", elective);
-        // startThread(elective)
-        _ajax(
-            {
-                ccid: elective.ccid, 
-                op: "add", 
-                token: token, 
-                type: "curr_sel"
-            },
-            {
-                success: (res) => {
-                    console.log(`選課 post 送出 ccid: ${data.ccid}`)
-                    resData = JSON.parse(res.d);
-                    resData.forEach((resd) => {
-                        if(resd.type == "cust_handler") {
-                            if(resd.args[0] == "true"){
-                                console.log("[resd] success", resd)
-                                clearThread(data.ccid)
-                            }else{
-                                console.log("[resd] failed", resd)
-                            }
-                        }else if(resd.type == "function" && resd.args[0] == '本課程時間衝堂') {
-                            console.log(`[resData] failed 本課程時間衝堂 ccid:${data.ccid}`)
-                            clearThread(data.ccid)
-                        }
-                    })
-                },
-                error: (e) => {
-                    if (window.top != window.self) // checks top window
-                        alert(JSON.encode(e));
-                    else {
-                        var msg;
-                        try {
-                            msg = JSON.decode(e.responseText);
-                        }
-                        catch (ex1) {
-                        }
-        
-                        if (msg != null && msg.Message != null)
-                            alert(msg.Message);
-                        else {
-                            var msg = e.responseText.replace('<', '&lt;');
-                            if (msg.length == 0)
-                                msg = "Failed to call <strong>'" + ajax_url + "'</strong> !";
-                            var html = "<div class='alert alert-danger' style='z-index:999;position:absolute;width:98%;'>" + msg + "</div>";
-                            $('body:first').append(html);
-                        }
-                    }
-                }
-            }
-        )
-    })
-}
-
 _ajax = (data, callback) => {
     $.ajax({
         'type': "POST",
@@ -266,4 +230,5 @@ chrome.runtime.onMessage.addListener(
 chrome.storage.sync.set({token});
 console.log("elective.js is inject")
 console.log("token", token)
+console.log("type", type)
 tableUpdate();

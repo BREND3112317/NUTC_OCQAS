@@ -8,6 +8,10 @@ building = () => {
     bAllStart.addEventListener("click", () => {
         allPlayWork();
     })
+    let StopAllWork_b = document.getElementById("allWorkStop")
+    StopAllWork_b.addEventListener("click", () => {
+        stopAllWork();
+    })
 }
 
 pre_buildingApp = () => {
@@ -41,14 +45,20 @@ buildingApp = (electives, run, token) => {
         let bControlItem = document.createElement("div")
         bControlItem.className = "btn-group"
         let bStart = document.createElement("button");
-        bStart.className = "btn btn-primary"
-        bStart.innerHTML = `<i class="bi bi-play"></i>`
-        bStart.setAttribute("data-status", "play");
+        if(elective.status.run==false){
+            bStart.className = "btn btn-outline-primary"
+            bStart.innerHTML = `<i class="bi bi-play"></i>`
+            bStart.setAttribute("data-status", "play");
+        }else{
+            bStart.className = "btn btn-outline-danger"
+            bStart.innerHTML = `<i class="bi bi-stop"></i>`
+            bStart.setAttribute("data-status", "stop");
+        }
         bStart.addEventListener("click", (e) => {
             switchWork(e.currentTarget, elective.ccid)
         });
         let bDelete = document.createElement("button");
-        bDelete.className = "btn btn-secondary"
+        bDelete.className = "btn btn-outline-secondary"
         bDelete.innerHTML = `<i class="bi bi-trash"></i>`
         bDelete.addEventListener("click", deleteWork)
         bControlItem.append(bStart);
@@ -78,14 +88,14 @@ buildElectiveElement = (elective) => {
     let bControlItem = document.createElement("div")
     bControlItem.className = "btn-group"
     let bStart = document.createElement("button");
-    bStart.className = "btn btn-primary"
+    bStart.className = "btn btn-outline-primary"
     bStart.innerHTML = `<i class="bi bi-play"></i>`
     bStart.setAttribute("data-status", "play");
     bStart.addEventListener("click", (e) => {
         switchWork(e.currentTarget, ccid)
     });
     let bDelete = document.createElement("button");
-    bDelete.className = "btn btn-secondary"
+    bDelete.className = "btn btn-outline-secondary"
     bDelete.innerHTML = `<i class="bi bi-trash"></i>`
     bDelete.addEventListener("click", deleteWork)
     bControlItem.append(bStart);
@@ -123,11 +133,20 @@ deleteWork = (e) => {
 }
 
 allPlayWork = () => {
-    console.log("test");
     let lis = document.querySelectorAll("#electiveList > li")
     lis.forEach((li) => {
         const bStatus = li.querySelector("div > button")
         if(bStatus.getAttribute("data-status") === "play") {
+            bStatus.click()
+        }
+    })
+}
+
+stopAllWork = () => {
+    let lis = document.querySelectorAll("#electiveList > li")
+    lis.forEach((li) => {
+        const bStatus = li.querySelector("div > button")
+        if(bStatus.getAttribute("data-status") === "stop") {
             bStatus.click()
         }
     })
@@ -151,11 +170,11 @@ switchWork = (e, ccid) => {
                 if(type === "play") {
                     e.innerHTML = `<i class="bi bi-stop"></i>`
                     e.setAttribute("data-status", "stop");
-                    e.className = "btn btn-danger"
+                    e.className = "btn btn-outline-danger"
                 }else{
                     e.innerHTML = `<i class="bi bi-play"></i>`
                     e.setAttribute("data-status", "play");
-                    e.className = "btn btn-primary"
+                    e.className = "btn btn-outline-primary"
                 }
                 
             }
@@ -179,7 +198,7 @@ chrome.runtime.onMessage.addListener(
             let bSwitch = il.querySelector("button");
             bSwitch.innerHTML = `<i class="bi bi-play"></i>`
             bSwitch.setAttribute("data-status", "play");
-            bSwitch.className = "btn btn-primary"
+            bSwitch.className = "btn btn-outline-primary"
             if(il.querySelectorAll("span").length == 1){
                 let spanBadge = document.createElement("span");
                 spanBadge.className = `badge ${request.data.message == "Success" ? "bg-success" : "bg-danger"} rounded-pill`
