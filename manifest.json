@@ -1,6 +1,6 @@
 {
     "name": "NUTC Automatic Elective",
-    "description": "台中科技大學 自動選課程是",
+    "description": "台中科技大學 自動選課",
     "version": "1.0.0",
     "manifest_version": 3,
     "permissions": [
@@ -26,6 +26,11 @@
     "content_scripts": [
         {
             "matches" : ["https://ais.nutc.edu.tw/student/selection/class_add_drop.aspx"],  
+            "run_at": "document_idle",
+            "js": ["./static/js/jquery.js", "./content/elective.js"]
+        },
+        {
+            "matches" : ["https://ais.nutc.edu.tw/student/selection/pre_selection.aspx"],  
             "run_at": "document_idle",
             "js": ["./static/js/jquery.js", "./content/elective.js"]
         }
