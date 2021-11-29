@@ -1,4 +1,4 @@
-var DEBUG = true;
+var DEBUG = false;
 var thread_list = {};
 var token = document.querySelector("#ctl00_Head1 > script:nth-child(17)").innerText.split("token:'")[1].split("', type")[0];
 var type = document.querySelector("#ctl00_Head1 > script:nth-child(17)").innerText.split("token:'")[1].split("', type")[1].split(": '")[1].split("'")[0];
@@ -23,7 +23,6 @@ tableUpdate = () => {
             add2AE.innerText = "自動選課"
             tdAdd2AE.appendChild(add2AE)
             tr.appendChild(tdAdd2AE)
-            // console.log(tr)
         }else{
             let th = document.createElement("th")
             th.innerText = "Automatic";

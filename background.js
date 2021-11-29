@@ -14,8 +14,11 @@ chrome.runtime.onInstalled.addListener((request, sender, sendResponse) => {
 chrome.storage.sync.set({electives});
 console.log('Default background electives set to []', `electives:`, electives);
 
-
-
+// todo: try let the browser opening to init the extension
+// var counter = 0;
+// function incCounter(){
+//     return window.counter++;
+// }
 
 
 

@@ -1,5 +1,5 @@
 let app = document.getElementById("app");
-
+let DEBUG = false;
 /* Popup View */
 // pre_elfSend = function(data) {
 
@@ -21,7 +21,10 @@ pre_buildingApp = () => {
 }
 
 buildingApp = (electives, run, token) => {
-    console.log("DEBUG", electives);
+    if(DEBUG) {
+        console.log("DEBUG", electives);
+    }
+    
 
     // let dInfo = document.createElement("div");
     // dInfo.className = "input-group mb-3";
@@ -115,7 +118,7 @@ deleteWork = (e) => {
     ccid = il.getAttribute("data-ccid");
     chrome.tabs.query({ active: true, currentWindow: true}, function (tabs) {
         type = "delete"
-        console.log(type, e, ccid)
+        if(DEBUG)console.log(type, e, ccid)
         chrome.tabs.sendMessage(
             tabs[0].id, 
             {
@@ -129,7 +132,7 @@ deleteWork = (e) => {
             }
         );
     });
-    console.log("remove", il);
+    if(DEBUG)console.log("remove", il);
 }
 
 allPlayWork = () => {
@@ -153,10 +156,10 @@ stopAllWork = () => {
 }
 
 switchWork = (e, ccid) => {
-    console.log(e, ccid)
+    if(DEBUG)console.log(e, ccid)
     chrome.tabs.query({ active: true, currentWindow: true}, function (tabs) {
         type = e.getAttribute("data-status")
-        console.log("click", e, type)
+        if(DEBUG)console.log("click", e, type)
         chrome.tabs.sendMessage(
             tabs[0].id, 
             {
@@ -166,7 +169,7 @@ switchWork = (e, ccid) => {
                 }
             }, 
             function(response) {
-                console.log(type, response);
+                if(DEBUG)console.log(type, response);
                 if(type === "play") {
                     e.innerHTML = `<i class="bi bi-stop"></i>`
                     e.setAttribute("data-status", "stop");
@@ -185,10 +188,10 @@ switchWork = (e, ccid) => {
 /* Start */
 chrome.runtime.onMessage.addListener(
     async (request, sender, sendResponse) => {
-        console.log(sender.tab ?
+        if(DEBUG)console.log(sender.tab ?
                 "from a content script:" + sender.tab.url :
                 "from the extension");
-        console.log("request", request);
+                if(DEBUG)console.log("request", request);
         if(request.type === "updateElectives") {
             pre_buildingApp();
         }else if(request.type === "createElective") {
@@ -210,8 +213,11 @@ chrome.runtime.onMessage.addListener(
                 spanBadge.innerText = request.data.message
                 il.append(spanBadge)
             }
-            // console.log("stop", il)
         }
 });
 building()
 pre_buildingApp()
+
+// todo: try let the browser opening to init the extension
+// var bgp = chrome.extension.getBackgroundPage();
+// console.log(bgp.incCounter());
