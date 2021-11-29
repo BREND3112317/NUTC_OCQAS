@@ -18,10 +18,10 @@
     },
     "action": {
         "default_popup": "./popup/popup.html",
-        "default_icon": "./images/BR.png"
+        "default_icon": "./static/img/nutc_logo2.png"
     },
     "icons": {
-        "16": "./images/BR.png"
+        "16": "./static/img/nutc_logo2.png"
     },
     "content_scripts": [
         {
